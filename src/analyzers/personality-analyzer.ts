@@ -5,7 +5,7 @@
  * to determine supporter personality type through a 2x2 quadrant classification.
  */
 
-import { PersonalityType } from '../skills/bloom-identity-skill';
+import { PersonalityType } from '../bloom-identity-skill-v2';
 
 export interface UserData {
   sources: string[];

@@ -8,13 +8,13 @@
  * - Graceful degradation
  */
 
-import { PersonalityAnalyzer } from '../analyzers/personality-analyzer';
-import { EnhancedDataCollector } from '../analyzers/data-collector-enhanced';
-import { ManualQAFallback, ManualAnswer } from '../analyzers/manual-qa-fallback';
-import { CategoryMapper } from '../analyzers/category-mapper';
-import { AgentWallet, AgentWalletInfo } from '../blockchain/agent-wallet';
-import { TwitterShare, createTwitterShare } from '../integrations/twitter-share';
-import { ClawHubClient, createClawHubClient } from '../integrations/clawhub-client';
+import { PersonalityAnalyzer } from './analyzers/personality-analyzer';
+import { EnhancedDataCollector } from './analyzers/data-collector-enhanced';
+import { ManualQAFallback, ManualAnswer } from './analyzers/manual-qa-fallback';
+import { CategoryMapper } from './analyzers/category-mapper';
+import { AgentWallet, AgentWalletInfo } from './blockchain/agent-wallet';
+import { TwitterShare, createTwitterShare } from './integrations/twitter-share';
+import { ClawHubClient, createClawHubClient } from './integrations/clawhub-client';
 
 export enum PersonalityType {
   THE_VISIONARY = 'The Visionary',

@@ -5,7 +5,7 @@
  */
 
 import { ethers } from 'ethers';
-import { PersonalityType, IdentityData } from '../skills/bloom-identity-skill';
+import { PersonalityType, IdentityData } from '../bloom-identity-skill-v2';
 
 // Contract address on Base Sepolia
 const CONTRACT_ADDRESS = '0x33a5d347510a3ec95d10dB563e32fC8C91844B9E';

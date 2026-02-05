@@ -4,7 +4,7 @@
  * Handles minting and updating Bloom Identity Card SBTs on Base
  */
 
-import { PersonalityType, IdentityData } from '../skills/bloom-identity-skill';
+import { PersonalityType, IdentityData } from '../bloom-identity-skill-v2';
 import { ContractClient } from './contract-client';
 
 export interface MintResult {

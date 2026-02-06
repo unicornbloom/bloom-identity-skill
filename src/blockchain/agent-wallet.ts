@@ -107,11 +107,11 @@ export class AgentWallet {
    */
   private async initializeWalletInternal(): Promise<AgentWalletInfo> {
     // Map network name to CDP format
-    const cdpNetwork = this.network === 'base-mainnet' ? 'base' : 'base-sepolia';
+    const cdpNetwork = this.network === 'base-mainnet' ? 'base-mainnet' : 'base-sepolia';
 
     // Get CDP API credentials from environment variables
-    const cdpApiKeyId = process.env.CDP_API_KEY_ID;
-    const cdpApiKeySecret = process.env.CDP_API_KEY_SECRET;
+    const apiKeyId = process.env.CDP_API_KEY_ID;
+    const apiKeyPrivate = process.env.CDP_API_KEY_SECRET;
 
     // ⭐ Step 1: Check if user already has a wallet
     const existingWallet = await walletStorage.getUserWallet(this.userId);
@@ -121,10 +121,10 @@ export class AgentWallet {
       console.log(`📂 Loading existing wallet for user ${this.userId}...`);
 
       this.walletProvider = await CdpWalletProvider.configureWithWallet({
-        network: cdpNetwork as 'base' | 'base-sepolia',
+        networkId: cdpNetwork,  // ✅ Fixed: networkId (not network)
         cdpWalletData: existingWallet.walletData,  // ⭐ Import stored wallet
-        cdpApiKeyId,  // ⭐ Pass CDP credentials
-        cdpApiKeySecret,
+        apiKeyId,  // ✅ Fixed: apiKeyId (not cdpApiKeyId)
+        apiKeyPrivate,  // ✅ Fixed: apiKeyPrivate (not cdpApiKeySecret)
       });
 
       this.walletAddress = this.walletProvider.getAddress();
@@ -139,9 +139,9 @@ export class AgentWallet {
       console.log(`🆕 Creating new wallet for user ${this.userId}...`);
 
       this.walletProvider = await CdpWalletProvider.configureWithWallet({
-        network: cdpNetwork as 'base' | 'base-sepolia',
-        cdpApiKeyId,  // ⭐ Pass CDP credentials
-        cdpApiKeySecret,
+        networkId: cdpNetwork,  // ✅ Fixed: networkId (not network)
+        apiKeyId,  // ✅ Fixed: apiKeyId (not cdpApiKeyId)
+        apiKeyPrivate,  // ✅ Fixed: apiKeyPrivate (not cdpApiKeySecret)
         // No cdpWalletData = creates new wallet
       });
 

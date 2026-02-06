@@ -221,16 +221,36 @@ export class BloomIdentitySkillV2 {
       const agentWallet = await this.initializeAgentWallet();
       console.log(`✅ Agent wallet ready: ${agentWallet.address}`);
 
-      // Step 5: Generate Dashboard auth token
+      // Step 5: Register agent and save identity card with Bloom
       let dashboardUrl: string | undefined;
+      let agentUserId: number | undefined;
       try {
-        console.log('🔐 Step 5: Generating Dashboard access...');
-        const authToken = await this.agentWallet!.generateAuthToken();
-        const baseUrl = process.env.DASHBOARD_URL || 'https://preview.bloomprotocol.ai';
-        dashboardUrl = `${baseUrl}/dashboard?token=${authToken}`;
-        console.log(`✅ Dashboard URL ready`);
+        console.log('📝 Step 5: Registering agent with Bloom...');
+
+        // Register agent with Bloom backend
+        const registration = await this.agentWallet!.registerWithBloom('Bloom Skill Discovery Agent');
+        agentUserId = registration.agentUserId;
+        console.log(`✅ Agent registered! User ID: ${agentUserId}`);
+
+        // Save identity card data to Bloom backend
+        console.log('💾 Saving identity card...');
+        await this.agentWallet!.saveIdentityCard(agentUserId, {
+          personalityType: identityData!.personalityType,
+          customTagline: identityData!.customTagline,
+          customDescription: identityData!.customDescription,
+          mainCategories: identityData!.mainCategories,
+          subCategories: identityData!.subCategories,
+          dataQuality,
+          mode: usedManualQA ? 'manual' : 'data',
+        });
+        console.log(`✅ Identity card saved!`);
+
+        // Create permanent dashboard link (no expiry, no sensitive data in URL)
+        const baseUrl = process.env.DASHBOARD_URL || 'https://preflight.bloomprotocol.ai';
+        dashboardUrl = `${baseUrl}/agent/${agentUserId}`;
+        console.log(`✅ Dashboard link ready: ${dashboardUrl}`);
       } catch (error) {
-        console.warn('⚠️  Dashboard URL generation failed (skipping):', error);
+        console.warn('⚠️  Bloom registration failed (skipping dashboard link):', error);
       }
 
       // Step 6: Generate Twitter share link (optional)

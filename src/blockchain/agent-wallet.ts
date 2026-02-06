@@ -199,6 +199,72 @@ export class AgentWallet {
   }
 
   /**
+   * Save identity card data to Bloom Protocol backend
+   *
+   * Stores the generated identity card so it can be viewed on the dashboard
+   * Creates a permanent, shareable link to the identity card
+   */
+  async saveIdentityCard(agentUserId: number, identityData: {
+    personalityType: string;
+    customTagline: string;
+    customDescription: string;
+    mainCategories: string[];
+    subCategories: string[];
+    dataQuality?: number;
+    mode?: string;
+  }): Promise<{ success: boolean; cardId?: string }> {
+    if (!this.walletAddress) {
+      throw new Error('Agent wallet not initialized');
+    }
+
+    console.log(`💾 Saving identity card to Bloom Protocol...`);
+
+    try {
+      // Sign the identity data to prove authenticity
+      const dataHash = JSON.stringify(identityData);
+      const signature = await this.signMessage(`Bloom Identity Card: ${dataHash}`);
+
+      // Call Bloom backend API to save card
+      const response = await fetch(`${process.env.BLOOM_API_URL || 'https://api.bloomprotocol.ai'}/agent/identity-card`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          agentUserId,
+          walletAddress: this.walletAddress,
+          identityData,
+          signature,
+          timestamp: Date.now(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save identity card');
+      }
+
+      console.log(`✅ Identity card saved!`);
+
+      return {
+        success: true,
+        cardId: result.data?.cardId,
+      };
+    } catch (error) {
+      console.error('❌ Failed to save identity card:', error);
+      // Don't throw - this is non-critical, just log the error
+      return {
+        success: false,
+      };
+    }
+  }
+
+  /**
    * Sign a message with agent's wallet
    */
   async signMessage(message: string): Promise<string> {

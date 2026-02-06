@@ -71,8 +71,10 @@ export class BloomIdentitySkillV2 {
 
   /**
    * Initialize agent wallet (one-time setup)
+   *
+   * ⭐ Creates per-user wallet using userId
    */
-  private async initializeAgentWallet(): Promise<AgentWalletInfo> {
+  private async initializeAgentWallet(userId: string): Promise<AgentWalletInfo> {
     if (this.agentWallet) {
       return this.agentWallet.getWalletInfo();
     }
@@ -83,7 +85,8 @@ export class BloomIdentitySkillV2 {
     const network = (process.env.NETWORK as 'base-mainnet' | 'base-sepolia') ||
                    (process.env.NODE_ENV === 'production' ? 'base-mainnet' : 'base-sepolia');
 
-    this.agentWallet = new AgentWallet({ network });
+    // ⭐ Pass userId for per-user wallet
+    this.agentWallet = new AgentWallet({ userId, network });
 
     const walletInfo = await this.agentWallet.initialize();
 
@@ -212,9 +215,9 @@ export class BloomIdentitySkillV2 {
       const recommendations = await this.recommendSkills(identityData!);
       console.log(`✅ Found ${recommendations.length} matching skills`);
 
-      // Step 4: Initialize Agent Wallet ⭐ NEW
+      // Step 4: Initialize Agent Wallet ⭐ Per-User Wallet
       console.log('🤖 Step 4: Initializing Agent Wallet...');
-      const agentWallet = await this.initializeAgentWallet();
+      const agentWallet = await this.initializeAgentWallet(userId);  // ⭐ Pass userId
       console.log(`✅ Agent wallet ready: ${agentWallet.address}`);
 
       // Step 5: Register agent and save identity card with Bloom (single atomic operation)

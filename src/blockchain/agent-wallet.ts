@@ -4,14 +4,22 @@
  * Uses Coinbase CDP (Developer Platform) to create and manage
  * wallet for autonomous agents with X402 payment capabilities.
  *
+ * ⭐ Per-User Wallet Support:
+ * - Each userId gets a unique, persistent wallet
+ * - Wallets are stored and retrieved automatically
+ * - First time: creates new wallet and stores it
+ * - Next time: retrieves existing wallet for same userId
+ *
  * References:
  * - AgentKit Docs: https://docs.cdp.coinbase.com/agent-kit/welcome
  * - X402 Protocol: https://docs.cdp.coinbase.com/x402/welcome
  */
 
 import { CdpWalletProvider } from '@coinbase/agentkit';
+import { walletStorage } from './wallet-storage';
 
 export interface AgentWalletConfig {
+  userId: string;  // ⭐ Required for per-user wallets
   network?: 'base-mainnet' | 'base-sepolia';
   apiKey?: string;
   privateKey?: string;
@@ -28,13 +36,25 @@ export interface AgentWalletInfo {
  * Agent Wallet Manager
  *
  * Creates and manages wallet for autonomous agent using Coinbase AgentKit
+ *
+ * ⭐ Each user gets a unique, persistent wallet:
+ * - User A → Wallet A (address: 0xAAA...)
+ * - User B → Wallet B (address: 0xBBB...)
  */
 export class AgentWallet {
+  private userId: string;  // ⭐ User identifier
   private walletProvider: CdpWalletProvider | null = null;
   private network: 'base-mainnet' | 'base-sepolia';
   private walletAddress: string | null = null;
 
-  constructor(config: AgentWalletConfig = {}) {
+  constructor(config: AgentWalletConfig) {
+    // ⭐ userId is required for per-user wallets
+    if (!config.userId) {
+      throw new Error('userId is required for AgentWallet');
+    }
+
+    this.userId = config.userId;
+
     // Default to mainnet for production readiness
     // Use NETWORK env var or config.network to override
     this.network = config.network ||
@@ -45,40 +65,81 @@ export class AgentWallet {
   /**
    * Initialize agent wallet
    *
-   * Creates a new CDP wallet for the agent with X402 capabilities
+   * ⭐ Per-User Wallet Logic:
+   * 1. Check if user already has a wallet (stored)
+   * 2. If yes → Import existing wallet
+   * 3. If no → Create new wallet and store it
    */
   async initialize(): Promise<AgentWalletInfo> {
-    console.log(`🤖 Initializing Agent Wallet on ${this.network}...`);
+    console.log(`🤖 Initializing Agent Wallet for user ${this.userId} on ${this.network}...`);
 
     try {
       // Map network name to CDP format
       const cdpNetwork = this.network === 'base-mainnet' ? 'base' : 'base-sepolia';
 
-      // Initialize CDP Wallet Provider (Smart Wallet with sponsored gas)
-      this.walletProvider = await CdpWalletProvider.configureWithWallet({
-        network: cdpNetwork as 'base' | 'base-sepolia',
-      });
+      // ⭐ Step 1: Check if user already has a wallet
+      const existingWallet = await walletStorage.getUserWallet(this.userId);
 
-      // Get wallet address
-      this.walletAddress = await this.walletProvider.getAddress();
+      if (existingWallet && existingWallet.network === this.network) {
+        // ⭐ Import existing wallet
+        console.log(`📂 Loading existing wallet for user ${this.userId}...`);
 
-      console.log(`✅ Agent Wallet created: ${this.walletAddress}`);
+        this.walletProvider = await CdpWalletProvider.configureWithWallet({
+          network: cdpNetwork as 'base' | 'base-sepolia',
+          cdpWalletData: existingWallet.walletData,  // ⭐ Import stored wallet
+        });
+
+        this.walletAddress = this.walletProvider.getAddress();
+
+        // Update last used timestamp
+        await walletStorage.updateLastUsed(this.userId);
+
+        console.log(`✅ Existing wallet loaded: ${this.walletAddress}`);
+
+      } else {
+        // ⭐ Create new wallet
+        console.log(`🆕 Creating new wallet for user ${this.userId}...`);
+
+        this.walletProvider = await CdpWalletProvider.configureWithWallet({
+          network: cdpNetwork as 'base' | 'base-sepolia',
+          // No cdpWalletData = creates new wallet
+        });
+
+        this.walletAddress = this.walletProvider.getAddress();
+
+        // ⭐ Export and store wallet data
+        const walletData = await this.walletProvider.exportWallet();
+        await walletStorage.saveUserWallet(
+          this.userId,
+          walletData,
+          this.walletAddress,
+          this.network
+        );
+
+        console.log(`✅ New wallet created and stored: ${this.walletAddress}`);
+      }
+
+      // Log wallet count for debugging
+      const walletCount = await walletStorage.getWalletCount();
+      console.log(`📊 Total wallets in storage: ${walletCount}`);
 
       return {
         address: this.walletAddress,
         network: this.network,
         x402Endpoint: this.getX402Endpoint(),
       };
+
     } catch (error) {
       // Fallback to mock wallet for testing when CDP credentials are not available
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       if (errorMessage.includes('coinbase_cloud_api_key.json') || errorMessage.includes('Invalid configuration')) {
         console.warn('⚠️  CDP credentials not found, using mock wallet for testing');
 
-        // Generate deterministic test wallet address (for testing only!)
-        this.walletAddress = '0x' + '1234567890abcdef'.repeat(2) + '12345678';
+        // Generate deterministic test wallet address per user (for testing only!)
+        const hash = this.simpleHash(this.userId);
+        this.walletAddress = '0x' + hash.substring(0, 40);
 
-        console.log(`🧪 Mock Agent Wallet created: ${this.walletAddress}`);
+        console.log(`🧪 Mock wallet for ${this.userId}: ${this.walletAddress}`);
 
         return {
           address: this.walletAddress,
@@ -90,6 +151,19 @@ export class AgentWallet {
       console.error('❌ Failed to initialize agent wallet:', error);
       throw new Error(`Agent wallet initialization failed: ${errorMessage}`);
     }
+  }
+
+  /**
+   * Simple hash function for deterministic mock addresses (testing only)
+   */
+  private simpleHash(input: string): string {
+    let hash = 0;
+    for (let i = 0; i < input.length; i++) {
+      const char = input.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(16).padStart(40, '0');
   }
 
   /**

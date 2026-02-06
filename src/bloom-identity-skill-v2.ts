@@ -239,49 +239,11 @@ export class BloomIdentitySkillV2 {
         agentUserId = registration.agentUserId;
         console.log(`✅ Agent registered with identity card! User ID: ${agentUserId}`);
 
-        // Generate JWT token for agent authentication with wallet signature
-        console.log('🔐 Generating authentication token with wallet signature...');
-        const authToken = await this.agentWallet!.generateAuthToken({
-          agentUserId,
-          identityData: {
-            personalityType: identityData!.personalityType,
-            tagline: identityData!.customTagline,
-            description: identityData!.customDescription,
-            mainCategories: identityData!.mainCategories,
-            subCategories: identityData!.subCategories,
-            confidence: dataQuality,
-            mode: usedManualQA ? 'manual' : 'data',
-          },
-        });
-        console.log(`✅ Authentication token generated with signature`);
-
-        // Create short code for cleaner URL
-        console.log('🔗 Creating short authentication URL...');
-        try {
-          const baseUrl = process.env.DASHBOARD_URL || 'https://preflight.bloomprotocol.ai';
-          const codeResponse = await fetch(`${baseUrl}/api/agent/auth/create-code`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ token: authToken }),
-          });
-
-          if (codeResponse.ok) {
-            const { url } = await codeResponse.json();
-            dashboardUrl = url;
-            console.log(`✅ Short URL created: ${dashboardUrl}`);
-          } else {
-            // Fallback to long URL if code creation fails
-            dashboardUrl = `${baseUrl}/dashboard?token=${authToken}`;
-            console.log(`⚠️  Short code failed, using full token URL`);
-          }
-        } catch (codeError) {
-          // Fallback to long URL
-          const baseUrl = process.env.DASHBOARD_URL || 'https://preflight.bloomprotocol.ai';
-          dashboardUrl = `${baseUrl}/dashboard?token=${authToken}`;
-          console.log(`⚠️  Short code unavailable, using full token URL`);
-        }
+        // Create permanent dashboard URL using agentUserId
+        console.log('🔗 Creating permanent dashboard URL...');
+        const baseUrl = process.env.DASHBOARD_URL || 'https://preflight.bloomprotocol.ai';
+        dashboardUrl = `${baseUrl}/agents/${agentUserId}`;
+        console.log(`✅ Permanent URL created: ${dashboardUrl}`);
       } catch (error) {
         console.warn('⚠️  Bloom registration failed (skipping dashboard link):', error);
       }

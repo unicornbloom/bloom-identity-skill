@@ -328,6 +328,16 @@ export class AgentWallet {
         intuition: number;
         contribution: number;
       };
+      recommendations?: Array<{
+        skillId: string;
+        skillName: string;
+        description: string;
+        url: string;
+        categories: string[];
+        matchScore: number;
+        creator?: string;
+        creatorUserId?: number;
+      }>;
     }
   ): Promise<{ agentUserId: number; x402Endpoint: string }> {
     if (!this.walletAddress) {

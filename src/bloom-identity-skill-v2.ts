@@ -249,6 +249,7 @@ export class BloomIdentitySkillV2 {
           confidence: dataQuality,
           mode: usedManualQA ? 'manual' : 'data',
           dimensions, // ⭐ Include 2x2 metrics
+          recommendations, // ⭐ Include skill recommendations (for future agent dashboard)
         });
         agentUserId = registration.agentUserId;
         console.log(`✅ Agent registered with identity card! User ID: ${agentUserId}`);
@@ -467,7 +468,9 @@ ${getPersonalityEmoji(identityData.personalityType)} **${identityData.personalit
 ${identityData.customDescription}
 
 **Categories**: ${identityData.mainCategories.join(', ')}
-
+${identityData.subCategories && identityData.subCategories.length > 0
+  ? `**Interests**: ${identityData.subCategories.join(', ')}\n`
+  : ''}
 ${metricsDisplay}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🎯 **Matching Skills** (${recommendations.length})

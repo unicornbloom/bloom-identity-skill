@@ -69,7 +69,11 @@ function formatResult(result: any): void {
   console.log(`${getPersonalityEmoji(identityData.personalityType)} ${identityData.personalityType}`);
   console.log(`💬 "${identityData.customTagline}"\n`);
   console.log(`${identityData.customDescription}\n`);
-  console.log(`Categories: ${identityData.mainCategories.join(', ')}\n`);
+  console.log(`Categories: ${identityData.mainCategories.join(', ')}`);
+  if (identityData.subCategories && identityData.subCategories.length > 0) {
+    console.log(`Interests: ${identityData.subCategories.join(', ')}`);
+  }
+  console.log('');
 
   // 2x2 Metrics
   if (dimensions) {

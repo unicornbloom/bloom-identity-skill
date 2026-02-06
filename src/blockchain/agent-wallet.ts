@@ -145,7 +145,7 @@ export class AgentWallet {
         apiKeyId,
         apiKeySecret,
         walletSecret,
-        idempotencyKey: `bloom-agent-${this.userId}`,  // ⭐ Ensures same user gets same wallet
+        idempotencyKey: this.generateDeterministicUUID(this.userId),  // ⭐ UUID v4 from userId
       });
 
       this.walletAddress = this.walletProvider.getAddress() as `0x${string}`;
@@ -194,6 +194,31 @@ export class AgentWallet {
       hash = hash & hash;
     }
     return Math.abs(hash).toString(16).padStart(40, '0');
+  }
+
+  /**
+   * Generate deterministic UUID v4 from userId
+   *
+   * CDP requires UUID v4 format for idempotency keys
+   * We create a deterministic UUID so same user always gets same wallet
+   */
+  private generateDeterministicUUID(input: string): string {
+    const crypto = require('crypto');
+
+    // Create a hash from the input
+    const hash = crypto.createHash('sha256').update(input).digest('hex');
+
+    // Format as UUID v4: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+    // Where x is any hexadecimal digit and y is one of 8, 9, A, or B
+    const uuid = [
+      hash.substr(0, 8),
+      hash.substr(8, 4),
+      '4' + hash.substr(12, 3), // Version 4
+      ((parseInt(hash.substr(16, 1), 16) & 0x3) | 0x8).toString(16) + hash.substr(17, 3), // Variant bits
+      hash.substr(20, 12)
+    ].join('-');
+
+    return uuid;
   }
 
   /**

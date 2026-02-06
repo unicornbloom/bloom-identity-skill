@@ -115,6 +115,9 @@ export class AgentWallet {
     const apiKeySecret = process.env.CDP_API_KEY_SECRET;
     const walletSecret = process.env.CDP_WALLET_SECRET;
 
+    // Get RPC URL (with fallback to public endpoints)
+    const rpcUrl = process.env.CDP_RPC_URL || this.getDefaultRpcUrl();
+
     // ⭐ Step 1: Check if user already has a wallet
     const existingWallet = await walletStorage.getUserWallet(this.userId);
 
@@ -127,6 +130,7 @@ export class AgentWallet {
         apiKeyId,
         apiKeySecret,
         walletSecret,
+        rpcUrl,  // ⭐ Add RPC URL
         address: existingWallet.walletAddress as `0x${string}`,  // ⭐ Import by address
       });
 
@@ -146,6 +150,7 @@ export class AgentWallet {
         apiKeyId,
         apiKeySecret,
         walletSecret,
+        rpcUrl,  // ⭐ Add RPC URL
         idempotencyKey: this.generateDeterministicUUID(this.userId),  // ⭐ UUID v4 from userId
       });
 
@@ -220,6 +225,18 @@ export class AgentWallet {
     ].join('-');
 
     return uuid;
+  }
+
+  /**
+   * Get default RPC URL based on network
+   */
+  private getDefaultRpcUrl(): string {
+    // Public RPC endpoints for Base network
+    if (this.network === 'base-mainnet') {
+      return 'https://mainnet.base.org';
+    } else {
+      return 'https://sepolia.base.org';
+    }
   }
 
   /**
@@ -469,7 +486,15 @@ export class AgentWallet {
    * Get wallet info for display
    */
   async getWalletInfo(): Promise<AgentWalletInfo> {
-    const balance = await this.getBalance();
+    let balance: string | undefined;
+
+    try {
+      balance = await this.getBalance();
+    } catch (error) {
+      // Balance check may fail if wallet not fully initialized
+      console.warn('⚠️  Could not fetch balance:', error);
+      balance = undefined;
+    }
 
     return {
       address: this.getAddress(),

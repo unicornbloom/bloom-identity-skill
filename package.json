@@ -22,7 +22,7 @@
     "@coinbase/agentkit": "^0.10.4",
     "commander": "^11.1.0",
     "jsonwebtoken": "^9.0.2",
-    "viem": "^2.0.0"
+    "viem": "^2.40.3"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.5",

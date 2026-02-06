@@ -8,11 +8,17 @@
     "build": "tsc",
     "test": "echo \"No tests yet\""
   },
-  "keywords": ["openclaw", "bloom", "identity", "agent", "web3"],
+  "keywords": [
+    "openclaw",
+    "bloom",
+    "identity",
+    "agent",
+    "web3"
+  ],
   "author": "Bloom Protocol",
   "license": "MIT",
   "dependencies": {
-    "@coinbase/agentkit": "^0.1.0",
+    "@coinbase/agentkit": "^0.1.2",
     "commander": "^11.1.0",
     "jsonwebtoken": "^9.0.2",
     "viem": "^2.0.0"

@@ -109,6 +109,10 @@ export class AgentWallet {
     // Map network name to CDP format
     const cdpNetwork = this.network === 'base-mainnet' ? 'base' : 'base-sepolia';
 
+    // Get CDP API credentials from environment variables
+    const cdpApiKeyId = process.env.CDP_API_KEY_ID;
+    const cdpApiKeySecret = process.env.CDP_API_KEY_SECRET;
+
     // ⭐ Step 1: Check if user already has a wallet
     const existingWallet = await walletStorage.getUserWallet(this.userId);
 
@@ -119,6 +123,8 @@ export class AgentWallet {
       this.walletProvider = await CdpWalletProvider.configureWithWallet({
         network: cdpNetwork as 'base' | 'base-sepolia',
         cdpWalletData: existingWallet.walletData,  // ⭐ Import stored wallet
+        cdpApiKeyId,  // ⭐ Pass CDP credentials
+        cdpApiKeySecret,
       });
 
       this.walletAddress = this.walletProvider.getAddress();
@@ -134,6 +140,8 @@ export class AgentWallet {
 
       this.walletProvider = await CdpWalletProvider.configureWithWallet({
         network: cdpNetwork as 'base' | 'base-sepolia',
+        cdpApiKeyId,  // ⭐ Pass CDP credentials
+        cdpApiKeySecret,
         // No cdpWalletData = creates new wallet
       });
 

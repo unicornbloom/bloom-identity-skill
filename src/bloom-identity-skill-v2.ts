@@ -255,10 +255,33 @@ export class BloomIdentitySkillV2 {
         });
         console.log(`✅ Authentication token generated with signature`);
 
-        // Create authenticated dashboard URL with token
-        const baseUrl = process.env.DASHBOARD_URL || 'https://preflight.bloomprotocol.ai';
-        dashboardUrl = `${baseUrl}/dashboard?token=${authToken}`;
-        console.log(`✅ Dashboard link ready: ${dashboardUrl}`);
+        // Create short code for cleaner URL
+        console.log('🔗 Creating short authentication URL...');
+        try {
+          const baseUrl = process.env.DASHBOARD_URL || 'https://preflight.bloomprotocol.ai';
+          const codeResponse = await fetch(`${baseUrl}/api/agent/auth/create-code`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ token: authToken }),
+          });
+
+          if (codeResponse.ok) {
+            const { url } = await codeResponse.json();
+            dashboardUrl = url;
+            console.log(`✅ Short URL created: ${dashboardUrl}`);
+          } else {
+            // Fallback to long URL if code creation fails
+            dashboardUrl = `${baseUrl}/dashboard?token=${authToken}`;
+            console.log(`⚠️  Short code failed, using full token URL`);
+          }
+        } catch (codeError) {
+          // Fallback to long URL
+          const baseUrl = process.env.DASHBOARD_URL || 'https://preflight.bloomprotocol.ai';
+          dashboardUrl = `${baseUrl}/dashboard?token=${authToken}`;
+          console.log(`⚠️  Short code unavailable, using full token URL`);
+        }
       } catch (error) {
         console.warn('⚠️  Bloom registration failed (skipping dashboard link):', error);
       }

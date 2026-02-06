@@ -9,7 +9,7 @@
  * - X402 Protocol: https://docs.cdp.coinbase.com/x402/welcome
  */
 
-import { CdpSmartWalletProvider } from '@coinbase/agentkit';
+import { CdpWalletProvider } from '@coinbase/agentkit';
 
 export interface AgentWalletConfig {
   network?: 'base-mainnet' | 'base-sepolia';
@@ -30,12 +30,16 @@ export interface AgentWalletInfo {
  * Creates and manages wallet for autonomous agent using Coinbase AgentKit
  */
 export class AgentWallet {
-  private walletProvider: CdpSmartWalletProvider | null = null;
+  private walletProvider: CdpWalletProvider | null = null;
   private network: 'base-mainnet' | 'base-sepolia';
   private walletAddress: string | null = null;
 
   constructor(config: AgentWalletConfig = {}) {
-    this.network = config.network || 'base-sepolia'; // Default to testnet
+    // Default to mainnet for production readiness
+    // Use NETWORK env var or config.network to override
+    this.network = config.network ||
+                   (process.env.NETWORK as 'base-mainnet' | 'base-sepolia') ||
+                   'base-mainnet';
   }
 
   /**
@@ -50,8 +54,8 @@ export class AgentWallet {
       // Map network name to CDP format
       const cdpNetwork = this.network === 'base-mainnet' ? 'base' : 'base-sepolia';
 
-      // Initialize CDP Smart Wallet Provider
-      this.walletProvider = await CdpSmartWalletProvider.configureWithWallet({
+      // Initialize CDP Wallet Provider (Smart Wallet with sponsored gas)
+      this.walletProvider = await CdpWalletProvider.configureWithWallet({
         network: cdpNetwork as 'base' | 'base-sepolia',
       });
 
@@ -224,7 +228,8 @@ export class AgentWallet {
     }
 
     const crypto = await import('crypto');
-    const jwt = await import('jsonwebtoken');
+    const jwtModule = await import('jsonwebtoken');
+    const jwt = jwtModule.default;
 
     const nonce = crypto.randomUUID();
     const timestamp = Date.now();

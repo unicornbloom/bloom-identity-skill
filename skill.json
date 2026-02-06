@@ -61,6 +61,11 @@
     ],
     "optional": [
       {
+        "key": "NETWORK",
+        "description": "Network for agent wallet: base-mainnet or base-sepolia",
+        "default": "base-mainnet"
+      },
+      {
         "key": "CDP_API_KEY_ID",
         "description": "Coinbase CDP API key for real wallet creation"
       },
@@ -71,7 +76,12 @@
     ]
   },
   "permissions": {
-    "network": ["https://api.bloomprotocol.ai", "https://base-sepolia.blockscout.com"],
+    "network": [
+      "https://api.bloomprotocol.ai",
+      "https://base-sepolia.blockscout.com",
+      "https://base.blockscout.com",
+      "https://x402.bloomprotocol.ai"
+    ],
     "filesystem": ["read", "write:./data"],
     "execution": ["node", "npx"]
   },

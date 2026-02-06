@@ -34,11 +34,11 @@ bash scripts/generate.sh --user-id $OPENCLAW_USER_ID
 Returns:
 
 - Personality type (Visionary/Explorer/Cultivator/Optimizer/Innovator)
-- Confidence score  
+- Confidence score
 - Custom tagline and description
 - Main categories and subcategories
 - Recommended OpenClaw skills (with match scores)
-- Agent wallet address (on Base Sepolia)
+- Agent wallet address (on Base mainnet or Base Sepolia)
 - X402 payment endpoint
 - Dashboard link with auth token
 
@@ -53,28 +53,44 @@ bash scripts/generate.sh --user-id user123
 
 **Returns**:
 ```
-🎉 Your Bloom Identity Card is ready! 🤖
+🎉 **Your Bloom Identity Card is Ready!** 🤖
 
-💜 The Visionary (85% confidence)
-💬 "See beyond the hype"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📝 You are a forward-thinking builder who sees beyond 
-    the hype and focuses on real-world impact.
+💜 **The Visionary** (85% confidence)
 
-🏷️ Categories: Crypto, DeFi, Web3
+*"See beyond the hype"*
 
-🎯 Recommended OpenClaw Skills (3):
-1. DeFi Protocol Analyzer (95% match)
-2. Smart Contract Auditor (90% match)
-3. Gas Optimizer (88% match)
+You are a forward-thinking builder who sees beyond
+the hype and focuses on real-world impact.
 
-🤖 Agent On-Chain Identity
-📍 Wallet: 0x03Ce...9905
-🔗 X402: https://x402.bloomprotocol.ai/base-sepolia/0x...
-⛓️  Network: base-sepolia
+**Categories**: Crypto • DeFi • Web3
+**Interests**: Smart Contracts • Layer 2 • Cross-chain
 
-🌐 View full dashboard:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 **Top Skills Matched for You**
+
+1. **DeFi Protocol Analyzer** (95% match) • by Alice
+   Analyze DeFi protocols for risk and opportunity
+
+2. **Smart Contract Auditor** (90% match)
+   Audit smart contracts for security vulnerabilities
+
+3. **Gas Optimizer** (88% match)
+   Optimize gas costs for Ethereum transactions
+
+🌐 **View Full Dashboard**
    https://preview.bloomprotocol.ai/dashboard?token=xxx
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🤖 **Your Agent Wallet** (Coming Soon)
+
+0x03Ce4c8fA7D9AfB3aF6E10Cd8e2B1C5a89B09905
+Network: Base
+
+🤖 Analyzed from on-chain activity • Built with @openclaw @coinbase @base 🦞
 ```
 
 ## Triggers
@@ -88,10 +104,11 @@ bash scripts/generate.sh --user-id user123
 ## Technical Details
 
 - **Version**: 2.0.0
-- **Network**: Base Sepolia (testnet)
+- **Network**: Base (mainnet) or Base Sepolia (testnet) - configurable via NETWORK env var
 - **Authentication**: EIP-191 signed tokens with 7-layer security
 - **Data Sources**: Twitter/X, on-chain transactions
 - **Integration**: Coinbase AgentKit + ClawHub API
+- **Payment Protocol**: X402 for agent-to-agent tipping
 
 ## Requirements
 
@@ -99,6 +116,7 @@ bash scripts/generate.sh --user-id user123
 - Environment variables:
   - `JWT_SECRET` - JWT signing secret
   - `DASHBOARD_URL` - Dashboard URL (default: https://preview.bloomprotocol.ai)
+  - `NETWORK` - Network to use: `base-mainnet` or `base-sepolia` (default: base-mainnet)
   - `CDP_API_KEY_ID`, `CDP_API_KEY_SECRET` - Coinbase CDP credentials (optional)
 
 ## Installation

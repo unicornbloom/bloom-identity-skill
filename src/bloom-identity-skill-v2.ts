@@ -82,9 +82,12 @@ export class BloomIdentitySkillV2 {
     }
 
     console.log('🤖 Initializing agent wallet...');
-    this.agentWallet = new AgentWallet({
-      network: process.env.NODE_ENV === 'production' ? 'base-mainnet' : 'base-sepolia',
-    });
+
+    // Network priority: NETWORK env var > NODE_ENV-based > default to mainnet
+    const network = (process.env.NETWORK as 'base-mainnet' | 'base-sepolia') ||
+                   (process.env.NODE_ENV === 'production' ? 'base-mainnet' : 'base-sepolia');
+
+    this.agentWallet = new AgentWallet({ network });
 
     const walletInfo = await this.agentWallet.initialize();
 
@@ -403,40 +406,42 @@ export const bloomIdentitySkillV2 = {
  * Format success message for user
  */
 function formatSuccessMessage(result: any): string {
-  const { identityData, agentWallet, recommendations, mode, dataQuality } = result;
+  const { identityData, recommendations, mode, dataQuality } = result;
 
   const modeEmoji = mode === 'manual' ? '📝' : '🤖';
   const qualityText = dataQuality ? ` (${dataQuality}% confidence)` : '';
 
   return `
-🎉 Your Bloom Identity Card is ready! ${modeEmoji}
+🎉 **Your Bloom Identity Card Generated!** ${modeEmoji}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💜 **Your Identity**
 
 ${getPersonalityEmoji(identityData.personalityType)} **${identityData.personalityType}**${qualityText}
-💬 "${identityData.customTagline}"
+💬 *"${identityData.customTagline}"*
 
-📝 ${identityData.customDescription}
+${identityData.customDescription}
 
-🏷️ Categories: ${identityData.mainCategories.join(', ')}
+**Categories**: ${identityData.mainCategories.join(', ')}${identityData.subCategories.length > 0 ? `\n**Interests**: ${identityData.subCategories.slice(0, 3).join(', ')}` : ''}
 
-🎯 Recommended OpenClaw Skills (${recommendations.length}):
+${result.dashboardUrl ? `\n🌐 **View & Build Your Profile**\n→ ${result.dashboardUrl}\n\nYour identity card is saved on Bloom Protocol. You can return anytime to view and enhance your profile!\n` : ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 **Recommended OpenClaw Skills** (${recommendations.length})
+
 ${recommendations
   .slice(0, 5)
   .map((s: any, i: number) => {
-    return `${i + 1}. **${s.skillName}** (${s.matchScore}% match)\n   ${s.description}\n   💡 Tip creators with your Agent wallet below!`;
+    const creatorInfo = s.creator ? ` • by ${s.creator}` : '';
+    return `${i + 1}. **${s.skillName}** (${s.matchScore}% match)${creatorInfo}
+   ${s.description}`;
   })
   .join('\n\n')}
 
-🤖 Agent On-Chain Identity
-📍 Wallet: ${agentWallet.address.slice(0, 6)}...${agentWallet.address.slice(-4)}
-🔗 X402: ${agentWallet.x402Endpoint}
-⛓️  Network: ${agentWallet.network}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-${result.dashboardUrl ? `🌐 View full dashboard:\n   ${result.dashboardUrl}\n` : ''}
-${result.shareUrl ? `📢 Share on Twitter:\n   ${result.shareUrl}` : ''}
-
-${mode === 'manual' ? '\n*Generated via manual Q&A' : '\n*Generated via AI analysis'}
-
-Built with @openclaw @coinbase @base 🦞
+${mode === 'manual' ? '📝 Generated via Q&A' : '🤖 Analyzed from on-chain activity'} • Built with @openclaw @coinbase @base 🦞
   `.trim();
 }
 

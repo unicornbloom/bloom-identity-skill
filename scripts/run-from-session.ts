@@ -195,12 +195,33 @@ function formatResult(result: any): void {
   // Skills (real recommendations from ClawHub + GitHub)
   if (recommendations && recommendations.length > 0) {
     console.log('## 🎯 Recommended Tools\n');
-    recommendations.slice(0, 5).forEach((skill: any, i: number) => {
-      const creatorInfo = skill.creator ? ` *by ${skill.creator}*` : '';
-      const source = skill.source || 'ClawHub';
-      console.log(`**${i + 1}. [${skill.skillName}](${skill.url})** (${skill.matchScore}% match)${creatorInfo} · *${source}*`);
-      console.log(`   ${skill.description}\n`);
-    });
+    console.log('> 💡 *These recommendations are algorithmically generated based on your interests.*');
+    console.log('> *Please review each tool\'s documentation and security before use.*\n');
+
+    // Separate by source
+    const githubRepos = recommendations.filter((r: any) => r.source === 'GitHub');
+    const clawHubSkills = recommendations.filter((r: any) => r.source === 'ClawHub' || !r.source);
+
+    // GitHub Repositories (show top 7)
+    if (githubRepos.length > 0) {
+      console.log('### 🐙 GitHub Repositories\n');
+      githubRepos.slice(0, 7).forEach((repo: any, i: number) => {
+        const stars = repo.stars ? ` ⭐ ${formatStars(repo.stars)}` : '';
+        const language = repo.language ? ` · ${repo.language}` : '';
+        console.log(`**${i + 1}. [${repo.skillName}](${repo.url})** (${repo.matchScore}% match)${stars}${language}`);
+        console.log(`   ${repo.description}\n`);
+      });
+    }
+
+    // ClawHub Skills (show top 7)
+    if (clawHubSkills.length > 0) {
+      console.log('### 🔧 ClawHub Skills\n');
+      clawHubSkills.slice(0, 7).forEach((skill: any, i: number) => {
+        const creatorInfo = skill.creator ? ` *by @${skill.creator}*` : '';
+        console.log(`**${i + 1}. [${skill.skillName}](${skill.url})** (${skill.matchScore}% match)${creatorInfo}`);
+        console.log(`   ${skill.description}\n`);
+      });
+    }
   } else {
     console.log('## 🎯 Recommended Tools\n');
     console.log('*No matching tools found at this time*\n');
@@ -227,6 +248,13 @@ function getPersonalityEmoji(type: string): string {
     'The Innovator': '💙',
   };
   return emojiMap[type] || '🌸';
+}
+
+function formatStars(stars: number): string {
+  if (stars >= 1000) {
+    return `${(stars / 1000).toFixed(1)}k`;
+  }
+  return stars.toString();
 }
 
 // Run the script

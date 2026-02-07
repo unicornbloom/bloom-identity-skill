@@ -389,18 +389,16 @@ export class BloomIdentitySkillV2 {
         this.getGitHubRecommendations(identity),
       ]);
 
-      // Merge results
+      // Merge results (keep all for categorized display)
       const allRecommendations = [...clawHubSkills, ...githubRepos];
 
-      // Sort by match score and take top 10
-      const topRecommendations = allRecommendations
-        .sort((a, b) => b.matchScore - a.matchScore)
-        .slice(0, 10);
+      // Sort by match score within each source
+      allRecommendations.sort((a, b) => b.matchScore - a.matchScore);
 
       console.log(`✅ Found ${clawHubSkills.length} ClawHub + ${githubRepos.length} GitHub recommendations`);
-      console.log(`   Returning top ${topRecommendations.length} overall`);
+      console.log(`   Returning ${allRecommendations.length} total (categorized by source)`);
 
-      return topRecommendations;
+      return allRecommendations;
 
     } catch (error) {
       console.error('❌ Recommendation search failed:', error);
@@ -416,7 +414,7 @@ export class BloomIdentitySkillV2 {
       const clawHubSkills = await this.clawHubClient.getRecommendations({
         mainCategories: identity.mainCategories,
         subCategories: identity.subCategories,
-        limit: 15,
+        limit: 20,
       });
 
       // Convert ClawHub skills to our format and calculate enhanced match scores
@@ -462,7 +460,7 @@ export class BloomIdentitySkillV2 {
    */
   private async getGitHubRecommendations(identity: IdentityData): Promise<SkillRecommendation[]> {
     try {
-      return await this.githubRecommendations.getRecommendations(identity, 10);
+      return await this.githubRecommendations.getRecommendations(identity, 15);
     } catch (error) {
       console.error('⚠️  GitHub search failed:', error);
       return [];

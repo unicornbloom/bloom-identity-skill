@@ -22,6 +22,9 @@ Generate personalized Bloom Identity Cards based on **conversation history** (pr
 - Analyzes topics, interests, preferences from your conversations
 - Most authentic representation of who you are
 - No special permissions required
+- **⭐ REQUIRES: Minimum 3 messages** in your OpenClaw session
+  - If less than 3 messages: Skill will fail with clear error message
+  - Solution: Continue chatting with OpenClaw to build conversation history
 
 ### Secondary: Twitter/X Data (15% weight)
 - **Optional** - requires user authorization
@@ -34,7 +37,10 @@ Generate personalized Bloom Identity Cards based on **conversation history** (pr
 - Generates Tier 2/3 local wallet for tipping/payments
 - Does NOT analyze transaction history (privacy-preserving)
 
-**Key Rule**: Only fetch Twitter data if user has authorized X account access. If no auth → skip Twitter (fallback to conversation only).
+**Key Rules**:
+1. **Conversation First**: Requires minimum 3 messages in OpenClaw session (no silent fallback)
+2. **Twitter Optional**: Only fetch if user authorized X account access
+3. **Explicit Errors**: If insufficient data → clear error (no degradation to empty results)
 
 ## Usage
 

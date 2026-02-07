@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Bloom Identity Card Generator - New Version
-# Uses full CLI (src/index.ts) instead of token-based approach
+# Bloom Identity Card Generator - OpenClaw Integration
+# Uses full CLI (src/index.ts) with proper argument handling
 # Creates real wallets and permanent dashboard URLs
 
 set -e
@@ -14,19 +14,10 @@ if [ -f "$PROJECT_ROOT/.env" ]; then
   export $(grep -v '^#' "$PROJECT_ROOT/.env" | xargs 2>/dev/null || true)
 fi
 
-# Parse arguments
-USER_ID="$1"
+# ⭐ CRITICAL: Accept --user-id flag (OpenClaw format)
+# OpenClaw passes: scripts/generate.sh --user-id $OPENCLAW_USER_ID
+# We need to forward this correctly to the TypeScript CLI
 
-if [ -z "$USER_ID" ]; then
-  echo "❌ Error: USER_ID required"
-  echo ""
-  echo "Usage: bash scripts/generate.sh <user-id>"
-  echo ""
-  echo "Example:"
-  echo "  bash scripts/generate.sh my-unique-user-id"
-  exit 1
-fi
-
-# Run the full CLI
+# Run the full CLI with all arguments forwarded
 cd "$PROJECT_ROOT"
-npx tsx src/index.ts --user-id "$USER_ID"
+npx tsx src/index.ts "$@"

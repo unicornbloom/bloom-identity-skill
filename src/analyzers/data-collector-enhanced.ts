@@ -66,6 +66,7 @@ export interface ConversationMemory {
   interests: string[];   // Expressed interests
   preferences: string[]; // Stated preferences
   history: string[];     // Raw conversation snippets
+  messageCount: number;  // Number of messages analyzed (minimum 3 required)
 }
 
 export interface UserData {
@@ -318,8 +319,12 @@ export class EnhancedDataCollector {
 
   /**
    * Collect conversation memory from OpenClaw session files
+   *
+   * ⭐ CRITICAL: Requires minimum 3 messages for valid analysis
+   * - Throws error if messageCount < 3 (no silent fallback)
+   * - Forces explicit error handling in calling code
    */
-  private async collectConversationMemory(userId: string): Promise<ConversationMemory> {
+  private async collectConversationMemory(userId: string): Promise<ConversationMemory & { messageCount: number }> {
     try {
       // Import session reader (dynamic to avoid circular deps)
       const { createSessionReader } = await import('../integrations/openclaw-session-reader');
@@ -328,21 +333,22 @@ export class EnhancedDataCollector {
       // Read and analyze session history
       const analysis = await sessionReader.readSessionHistory(userId);
 
-      if (analysis.messageCount === 0) {
-        console.log('⚠️  No conversation history found, using empty data');
-        return {
-          topics: [],
-          interests: [],
-          preferences: [],
-          history: [],
-        };
+      // ⭐ CRITICAL: Minimum 3 messages required
+      if (analysis.messageCount < 3) {
+        throw new Error(
+          `Insufficient conversation data: ${analysis.messageCount} messages found (minimum 3 required). ` +
+          `Please continue chatting with OpenClaw to build conversation history.`
+        );
       }
+
+      console.log(`✅ Conversation analysis: ${analysis.messageCount} messages, ${analysis.topics.length} topics`);
 
       return {
         topics: analysis.topics,
         interests: analysis.interests,
         preferences: analysis.preferences,
         history: analysis.history,
+        messageCount: analysis.messageCount,
       };
     } catch (error) {
       console.error('❌ Failed to read session history:', error);
@@ -359,11 +365,22 @@ export class EnhancedDataCollector {
   /**
    * Check if we have sufficient data for analysis
    *
-   * Minimum requirement: At least Conversation OR Twitter
-   * Best case: Both Conversation AND Twitter
+   * ⭐ CRITICAL REQUIREMENT: Conversation with ≥3 messages
+   * - Conversation is PRIMARY (85% weight) and REQUIRED
+   * - Twitter is OPTIONAL (15% weight)
+   * - No silent fallback - explicit error if insufficient
    */
   hasSufficientData(userData: UserData): boolean {
-    return userData.sources.length > 0;
+    // Must have conversation data with minimum 3 messages
+    if (!userData.conversationMemory) {
+      return false;
+    }
+
+    if (userData.conversationMemory.messageCount < 3) {
+      return false;
+    }
+
+    return true;
   }
 
   /**

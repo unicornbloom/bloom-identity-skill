@@ -1,6 +1,6 @@
 ---
 name: bloom
-description: Discover your supporter personality. Are you a Visionary, Explorer, Cultivator, Optimizer, or Innovator? Get personalized AI tool recommendations based on how you chat and what excites you.
+description: Discover your supporter personality and find AI tools you'll love. Get personalized recommendations, connect with your first 100 supporters, and search for skills that match how you work. For indie devs, vibe coders, and AI builders.
 user-invocable: true
 command-dispatch: tool
 metadata: {"requires": {"bins": ["node", "npx"]}}
@@ -56,13 +56,13 @@ Works with as few as 3 messages—but richer history = deeper insights.
 ## 🌟 Why Bloom Supporter Identity?
 
 **For Indie Devs & AI Builders:**
-Finally, a way to show you were early—not through complex analytics, but through *conviction*. Your supporter card shows what you care about and why you back it.
+Building something new? Show you were early—not through complex analytics, but through *conviction*. Your supporter card helps you **find your first 100 supporters** who share your vision.
 
 **For Vibe Coders:**
-Stop guessing what tools to try next. Get personalized recommendations based on how you actually work, not generic listicles.
+Stop guessing what tools to try next. Get personalized recommendations based on how you actually work, not generic listicles. **Discover skills you'll actually use** instead of scrolling endless lists.
 
 **For Consumer AI Enthusiasts:**
-Discover your supporter type and connect with others who share your vibe. Rally Visionaries for bold launches. Engage Optimizers for feedback loops.
+**Find AI tools that match your vibe**. Search by supporter type (Visionary, Explorer, etc.) to connect with others who work like you. Rally early adopters for bold launches. Engage optimizers for feedback loops.
 
 ## 📋 Requirements
 
@@ -182,6 +182,14 @@ echo "Your conversation here" | \
 - ✅ **No auth required** – Works out of the box
 - ✅ **Ephemeral processing** – Data not stored long-term
 - ✅ **Local-first** – Runs in your environment
+
+## 🔍 How to Find Skills You'll Love
+
+Once you know your supporter type, you can:
+- **Search by archetype** – Find tools made for Visionaries, Explorers, etc.
+- **Filter by category** – AI agents, productivity, creative tools, automation
+- **Match by vibe** – Connect with creators who share your approach
+- **Build your network** – Find your first 100 supporters who get what you're building
 
 ## 📊 The 5 Supporter Types
 

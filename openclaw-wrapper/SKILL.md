@@ -1,167 +1,218 @@
 ---
 name: bloom
-description: Generate Bloom Identity Card from current conversation. Analyzes your personality directly from the conversation context without needing external data. Creates personalized identity type, recommends matching skills, and generates dashboard link.
+description: Discover your supporter personality. Are you a Visionary, Explorer, Cultivator, Optimizer, or Innovator? Get personalized AI tool recommendations based on how you chat and what excites you.
 user-invocable: true
 command-dispatch: tool
 metadata: {"requires": {"bins": ["node", "npx"]}}
 ---
 
-# Bloom Identity - OpenClaw Bot Integration
+# Bloom Supporter Identity
 
-Generate your personalized Bloom Identity Card **directly from the current conversation**.
+**Discover your supporter personality—straight from your conversations.**
 
-## How It Works
+Are you a Visionary who jumps on new tools early? An Explorer trying everything? A Cultivator building communities? An Optimizer fine-tuning workflows? Or an Innovator pushing boundaries?
 
-This skill analyzes your conversation with OpenClaw bot to:
-1. **Detect your personality type** (Visionary/Explorer/Cultivator/Optimizer/Innovator)
-2. **Identify your interests** from topics discussed
-3. **Recommend matching OpenClaw skills** based on your profile
-4. **Generate a shareable dashboard** with your identity card
+Find out in seconds with Bloom Supporter Identity.
 
-## Key Features
+## 🎯 What You Get
 
-✅ **No external data needed** - Uses current conversation context
-✅ **Privacy-first** - No Twitter/wallet analysis required
-✅ **Instant results** - Works with as few as 3+ messages
-✅ **Real recommendations** - Matches you with actual OpenClaw skills
+Your personalized Bloom Supporter Identity Card reveals:
 
-## Usage
+- **🎴 Your Supporter Type** – Visionary, Explorer, Cultivator, Optimizer, or Innovator
+- **💬 Custom Tagline** – A one-liner that captures your vibe ("First to try new AI tools")
+- **📊 2x2 Dimensions** – Conviction vs. Intuition, showing how you make decisions
+- **🏷️ Top Categories** – AI Tools, Productivity, Consumer Apps—where you spend your energy
+- **🎯 Tool Recommendations** – The top 5 tools matched to your profile
+- **🔗 Shareable Card** – Show off your supporter identity
+- **🤖 Agent Wallet** – Ready for tipping creators (powered by Coinbase on Base)
 
-Simply say:
+## ⚡️ How It Works
+
+Simple: just type `/bloom` in your chat.
+
+We analyze your last ~120 messages to understand:
+- **What excites you** (AI agents? productivity hacks? creative tools?)
+- **How you engage** (deep dives vs. quick experiments)
+- **Your supporter archetype** (early adopter or wait-and-see?)
+
+**No complex setup. No wallet signatures. No auth flows.**
+Just pure conversation intelligence.
+
+## 🚀 Usage
+
 ```
 /bloom
 ```
 
-Or use natural language:
+That's it. Or use natural language:
 ```
-generate my bloom identity
-discover my personality
-create my identity card
+"discover my supporter type"
+"what's my bloom identity"
+"create my supporter card"
 ```
 
-## Requirements
+Works with as few as 3 messages—but richer history = deeper insights.
 
-- **Minimum 3 messages** in current conversation
-- Node.js 18+ (usually already available)
-- Bloom Identity Skill installed in workspace
+## 🌟 Why Bloom Supporter Identity?
 
-## Output
+**For Indie Devs & AI Builders:**
+Finally, a way to show you were early—not through complex analytics, but through *conviction*. Your supporter card shows what you care about and why you back it.
 
-You'll receive:
-- 🎴 **Personality Type** (e.g., "The Innovator")
-- 💬 **Custom Tagline** personalized to you
-- 🏷️ **Main Categories** detected from conversation
-- 🎯 **Top 5 Skill Recommendations** with match scores
-- 🔗 **Dashboard Link** to view and share your identity card
-- 🤖 **Agent Wallet** for tipping skill creators
+**For Vibe Coders:**
+Stop guessing what tools to try next. Get personalized recommendations based on how you actually work, not generic listicles.
 
-## Example
+**For Consumer AI Enthusiasts:**
+Discover your supporter type and connect with others who share your vibe. Rally Visionaries for bold launches. Engage Optimizers for feedback loops.
 
-**You**: `/bloom-identity`
+## 📋 Requirements
 
-**Bot**: Analyzing your conversation...
+- **Minimum 3 messages** in your conversation (more is better)
+- **Node.js 18+** (usually pre-installed)
+- **Bloom Identity Skill** installed
+
+## 💡 Example Output
 
 ```
 ═══════════════════════════════════════════════════════
-🎉 Your Bloom Identity Card is ready! 🤖
+🎉 Your Bloom Supporter Identity Card is ready! 🤖
 ═══════════════════════════════════════════════════════
 
-🔗 VIEW YOUR IDENTITY CARD (Click below):
-   https://bloomprotocol.ai/agents/12345
+🔗 VIEW YOUR IDENTITY CARD:
+   https://bloomprotocol.ai/agents/27811541
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-💙 The Innovator
-💬 "First to back new tech"
+💜 The Visionary
+💬 "First to try new AI tools"
 
-📝 A technology pioneer who jumps on cutting-edge AI tools.
+You jump on cutting-edge tools before they're mainstream. Your
+conviction is your edge, and you see potential where others see
+hype. AI agents are where you spot the next big thing.
 
-🏷️  Categories: AI Tools, Technology, Innovation
-   Interests: AI Assistants, Content Creation, Code Tools
+🏷️  Categories: AI Tools · Productivity · Automation
+   Interests: AI Agents · No-code Tools · Creative AI
+
+📊 2x2 Dimensions:
+   Conviction: 78/100
+   Intuition: 85/100
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🎯 Recommended OpenClaw Skills (5):
+🎯 Top 5 Recommended Tools:
 
-1. ai-code-review (95% match) • by Alice
-   Automated code review using GPT-4
-   💡 Tip creators with your Agent wallet!
-   → https://clawhub.com/skills/ai-code-review
+1. agent-frameworks (94% match) · by @builder_alice
+   Build AI agents with tool use and memory
+   → https://clawhub.ai/skills/agent-frameworks
+
+2. no-code-automation (89% match) · by @automation_guru
+   Connect your apps without writing code
+   → https://clawhub.ai/skills/no-code-automation
 
 ...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🤖 Your Agent Wallet Created
+
+   Network: Base
+   Status: ✅ Wallet generated and ready
+
+   💡 Use your agent wallet to tip tool creators!
+   ⚠️  Tipping features coming soon
+   🔒 Do not deposit funds yet - withdrawals not ready
+
+═══════════════════════════════════════════════════════
+
+🌸 Bloom Supporter Identity · Built for indie builders
 ```
 
-## Implementation
+## 🔧 Installation
 
-This skill reads the complete OpenClaw session history (last ~120 messages) for comprehensive analysis:
-
+### Quick Install (via ClawHub)
 ```bash
-# Option 1: From session file (recommended - full context)
-npx tsx scripts/run-from-session.ts ~/.openclaw/agents/main/sessions/<SessionId>.jsonl <userId>
-
-# Option 2: From piped context (quick test)
-<conversation-context> | npx tsx scripts/run-from-context.ts --user-id <userId>
+clawhub install bloom
 ```
 
-### Finding Your Session File
-
+### Manual Install
 ```bash
-# Session files location
-~/.openclaw/agents/<agentId>/sessions/<SessionId>.jsonl
-
-# Example
-~/.openclaw/agents/main/sessions/abc123def456.jsonl
-```
-
-## Installation
-
-1. Clone Bloom Identity Skill to your workspace:
-```bash
+# 1. Clone the repo
 cd ~/.openclaw/workspace
 git clone https://github.com/unicornbloom/bloom-identity-skill.git
 cd bloom-identity-skill
+
+# 2. Install dependencies
 npm install
+
+# 3. Copy skill wrapper
+cp -r openclaw-wrapper ~/.openclaw/skills/bloom
+
+# 4. Test it
+/bloom
 ```
 
-2. Copy this skill wrapper to OpenClaw skills directory:
+## 🛠 Advanced Usage
+
+### Run from session file (full conversation context)
 ```bash
-cp -r openclaw-wrapper ~/.openclaw/skills/bloom-identity-openclaw
+npx tsx scripts/run-from-session.ts \
+  ~/.openclaw/agents/main/sessions/<SessionId>.jsonl \
+  <userId>
 ```
 
-3. Test it:
-```
-/bloom-identity
+### Run from piped context (quick test)
+```bash
+echo "Your conversation here" | \
+  npx tsx scripts/run-from-context.ts --user-id <userId>
 ```
 
-## Troubleshooting
+## 🐛 Troubleshooting
 
 **"Insufficient conversation data"**
-- Continue chatting with OpenClaw (need 3+ messages)
-- Try asking questions or discussing topics you're interested in
+→ Need at least 3 messages. Keep chatting about tools you're interested in!
 
 **"Command not found"**
-- Verify bloom-identity-skill is installed in `~/.openclaw/workspace/`
-- Run `npm install` in the bloom-identity-skill directory
+→ Verify `bloom-identity-skill` is in `~/.openclaw/workspace/` and run `npm install`
 
-**"No recommendations"**
-- The skill is working but couldn't find matching skills
-- This is expected if ClawHub API is unavailable
+**No tool recommendations**
+→ Tool recommendations depend on API availability. Your identity card still works!
 
-## Privacy
+## 🔐 Privacy
 
-- ✅ Only uses current conversation (no external APIs required)
-- ✅ Twitter/X integration is optional (skipped by default)
-- ✅ No wallet transaction analysis
-- ✅ Data is not stored long-term
+- ✅ **Conversation-only analysis** – No wallet analysis or transaction scraping
+- ✅ **No auth required** – Works out of the box
+- ✅ **Ephemeral processing** – Data not stored long-term
+- ✅ **Local-first** – Runs in your environment
 
-## Technical Details
+## 📊 The 5 Supporter Types
+
+**💜 The Visionary** – First to try new tools
+High conviction, high intuition. Jumps on cutting-edge stuff early.
+
+**🔵 The Explorer** – Tries everything
+Low conviction, high intuition. Experiments widely, finds hidden gems.
+
+**💚 The Cultivator** – Builds communities
+Low conviction, low intuition. Nurtures ecosystems, shares knowledge.
+
+**🟡 The Optimizer** – Refines workflows
+High conviction, low intuition. Doubles down on what works, maximizes productivity.
+
+**🔴 The Innovator** – Pushes boundaries
+Balanced dimensions. Combines conviction with experimentation.
+
+## 🧬 Technical Details
 
 - **Version**: 2.0.0
-- **Minimum Messages**: 3
-- **Data Weight**: 100% conversation (no Twitter/wallet needed)
-- **Analysis Time**: ~2-5 seconds
-- **Output Format**: Text + Dashboard URL
+- **Analysis Engine**: Conversation memory + category mapping
+- **Session Context**: Last ~120 messages (~5KB)
+- **Processing Time**: ~2-5 seconds
+- **Output Format**: Structured text + shareable dashboard URL
+- **Agent Wallet**: Coinbase CDP (Base network)
 
 ---
 
-Built by [Bloom Protocol](https://bloomprotocol.ai) 🌸
+**Built by [Bloom Protocol](https://bloomprotocol.ai) 🌸**
+
+Making supporter identity portable and provable.
+
+*For indie devs, vibe coders, and AI builders who back great tools early.*

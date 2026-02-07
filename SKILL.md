@@ -1,6 +1,6 @@
 ---
 name: bloom-identity
-description: Generate Bloom Identity Card from Twitter/X and on-chain data. Analyzes supporter profile, creates personality type (Visionary/Explorer/Cultivator/Optimizer/Innovator), recommends matching OpenClaw skills, and generates agent wallet. Use when user asks to "generate my bloom identity", "create identity card", "analyze my profile", or "discover my personality".
+description: Generate Bloom Identity Card from conversation history and Twitter/X data. Analyzes supporter personality through conversations (85% weight) and optionally enriched with Twitter activity (15% weight). Creates personality type (Visionary/Explorer/Cultivator/Optimizer/Innovator), recommends matching OpenClaw skills, and generates agent wallet. Use when user asks to "generate my bloom identity", "create identity card", "analyze my profile", or "discover my personality".
 homepage: https://bloomprotocol.ai
 metadata:
   {
@@ -13,7 +13,28 @@ metadata:
 
 # Bloom Identity Card Generator
 
-Generate personalized Bloom Identity Cards based on Twitter/X activity and on-chain identity.
+Generate personalized Bloom Identity Cards based on **conversation history** (primary) and **Twitter/X activity** (optional supplement).
+
+## Data Sources
+
+### Primary: Conversation History (85% weight)
+- **Always available** - owned by OpenClaw
+- Analyzes topics, interests, preferences from your conversations
+- Most authentic representation of who you are
+- No special permissions required
+
+### Secondary: Twitter/X Data (15% weight)
+- **Optional** - requires user authorization
+- Fetches real data via bird CLI (cookie auth)
+- Includes: bio, recent tweets, following list, interactions
+- **If not authorized**: Analysis proceeds with conversation only
+
+### Wallet
+- **Creation only** - NOT analyzed for personality
+- Generates Tier 2/3 local wallet for tipping/payments
+- Does NOT analyze transaction history (privacy-preserving)
+
+**Key Rule**: Only fetch Twitter data if user has authorized X account access. If no auth → skip Twitter (fallback to conversation only).
 
 ## Usage
 
@@ -106,9 +127,13 @@ Network: Base
 - **Version**: 2.0.0
 - **Network**: Base (mainnet) or Base Sepolia (testnet) - configurable via NETWORK env var
 - **Authentication**: EIP-191 signed tokens with 7-layer security
-- **Data Sources**: Twitter/X, on-chain transactions
-- **Integration**: Coinbase AgentKit + ClawHub API
+- **Data Sources**:
+  - Conversation history (OpenClaw sessions JSONL) - 85% weight
+  - Twitter/X (bird CLI) - 15% weight, optional
+  - Wallet creation only (viem + AES-256-GCM encryption) - NOT analyzed
+- **Integration**: Coinbase AgentKit (optional) + ClawHub API + bird CLI
 - **Payment Protocol**: X402 for agent-to-agent tipping
+- **Privacy**: No wallet transaction analysis, conversation-first approach
 
 ## Requirements
 

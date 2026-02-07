@@ -1,7 +1,7 @@
 {
   "name": "bloom-identity",
   "version": "2.0.0",
-  "description": "Generate Bloom Identity Card from Twitter/X and on-chain data",
+  "description": "Generate Bloom Identity Card from conversation history (85% weight) and Twitter/X data (15% weight, optional). Analyzes personality, recommends skills, creates agent wallet. Privacy-preserving: no wallet analysis.",
   "homepage": "https://bloomprotocol.ai",
   "author": "Bloom Protocol",
   "license": "MIT",

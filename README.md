@@ -1,6 +1,27 @@
 # Bloom Identity Skill
 
-OpenClaw skill for generating personalized Bloom Identity Cards based on Twitter/X and on-chain identity.
+OpenClaw skill for generating personalized Bloom Identity Cards based on **conversation history** (primary, 85% weight) and **Twitter/X data** (optional, 15% weight).
+
+## Data Sources & Privacy
+
+This skill analyzes personality from:
+
+1. **Conversation History** (85% weight) - Always available, owned by OpenClaw
+   - Most authentic representation of who you are
+   - Analyzes topics, interests, preferences from your conversations
+   - No special permissions required
+
+2. **Twitter/X Data** (15% weight) - Optional, requires authorization
+   - Fetches real data via bird CLI (cookie auth)
+   - Includes: bio, recent tweets, following list, interactions
+   - **If not authorized**: Analysis proceeds with conversation only
+
+3. **Wallet** - Creation only, NOT analyzed
+   - Creates Tier 2/3 local wallet for tipping/payments
+   - **Does NOT analyze** transaction history (privacy-preserving)
+   - Private keys encrypted with AES-256-GCM
+
+**Key Principle**: Conversation > Twitter > No wallet analysis
 
 ## Quick Start
 

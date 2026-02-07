@@ -145,7 +145,7 @@ export class BloomIdentitySkillV2 {
         console.log('📊 Step 1: Attempting data collection...');
 
         const userData = await this.dataCollector.collect(userId, {
-          skipFarcaster: true, // Skip Farcaster by default
+          // Default: Conversation + Twitter only (no wallet analysis)
         });
 
         dataQuality = this.dataCollector.getDataQualityScore(userData);

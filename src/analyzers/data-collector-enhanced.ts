@@ -72,26 +72,32 @@ export interface UserData {
   sources: string[];  // Which sources were successfully collected
   permissions: {
     twitter: boolean;
-    wallet: boolean;
-    farcaster: boolean;
     conversation: boolean;
   };
+  dataQuality: {
+    twitter: 'real' | 'none';
+    conversation: 'real' | 'none';
+  };
   twitter?: TwitterData;
+  conversationMemory?: ConversationMemory;
+
+  // Optional: Only if user explicitly provides wallet address + signature
   wallet?: WalletData;
   farcaster?: FarcasterData;
-  conversationMemory?: ConversationMemory;
 }
 
 export class EnhancedDataCollector {
   /**
    * Collect all available user data with permission handling
+   *
+   * Default: Only collects Conversation + Twitter (if authorized)
+   * Wallet analysis is OPTIONAL - only if user explicitly provides address + signature
    */
   async collect(
     userId: string,
     options?: {
       skipTwitter?: boolean;
-      skipWallet?: boolean;
-      skipFarcaster?: boolean;
+      includeWallet?: boolean;  // Changed: wallet is opt-in, not opt-out
     }
   ): Promise<UserData> {
     console.log(`📊 Collecting data for user: ${userId}`);
@@ -100,13 +106,27 @@ export class EnhancedDataCollector {
       sources: [],
       permissions: {
         twitter: false,
-        wallet: false,
-        farcaster: false,
         conversation: false,
+      },
+      dataQuality: {
+        twitter: 'none',
+        conversation: 'none',
       },
     };
 
-    // Collect Twitter/X data (priority)
+    // 1. Collect conversation memory (always try - owned by OpenClaw)
+    try {
+      userData.conversationMemory = await this.collectConversationMemory(userId);
+      userData.sources.push('Conversation');
+      userData.permissions.conversation = true;
+      userData.dataQuality.conversation = 'real';
+      console.log('✅ Conversation memory collected (real data)');
+    } catch (error) {
+      console.warn('⚠️  Conversation memory unavailable:', error);
+      userData.dataQuality.conversation = 'none';
+    }
+
+    // 2. Collect Twitter/X data (if authorized)
     if (!options?.skipTwitter) {
       try {
         const hasPermission = await this.checkTwitterPermission(userId);
@@ -114,60 +134,37 @@ export class EnhancedDataCollector {
 
         if (hasPermission) {
           userData.twitter = await this.collectTwitterData(userId);
-          userData.sources.push('Twitter');
-          console.log('✅ Twitter data collected');
+
+          // Check if we got real data
+          if (userData.twitter.bio || userData.twitter.tweets.length > 0) {
+            userData.sources.push('Twitter');
+            userData.dataQuality.twitter = 'real';
+            console.log('✅ Twitter data collected (real data via bird CLI)');
+          } else {
+            userData.dataQuality.twitter = 'none';
+            console.log('⚠️  Twitter data empty');
+          }
         } else {
-          console.log('⚠️  Twitter permission denied by user');
+          console.log('⚠️  Twitter permission denied by user - skipping');
+          userData.dataQuality.twitter = 'none';
         }
       } catch (error) {
         console.warn('⚠️  Twitter data unavailable:', error);
+        userData.dataQuality.twitter = 'none';
       }
     }
 
-    // Collect Wallet data
-    if (!options?.skipWallet) {
+    // 3. Wallet analysis - OPTIONAL (opt-in only)
+    // Only collect if user explicitly provides wallet address + signature
+    if (options?.includeWallet) {
       try {
-        const hasPermission = await this.checkWalletPermission(userId);
-        userData.permissions.wallet = hasPermission;
-
-        if (hasPermission) {
-          userData.wallet = await this.collectWalletData(userId);
-          userData.sources.push('Wallet');
-          console.log('✅ Wallet data collected');
-        } else {
-          console.log('⚠️  Wallet permission denied by user');
-        }
+        console.log('💰 Wallet analysis requested (opt-in)');
+        userData.wallet = await this.collectWalletData(userId);
+        userData.sources.push('Wallet');
+        console.log('✅ Wallet data collected');
       } catch (error) {
         console.warn('⚠️  Wallet data unavailable:', error);
       }
-    }
-
-    // Collect Farcaster data (optional)
-    if (!options?.skipFarcaster) {
-      try {
-        const hasPermission = await this.checkFarcasterPermission(userId);
-        userData.permissions.farcaster = hasPermission;
-
-        if (hasPermission) {
-          userData.farcaster = await this.collectFarcasterData(userId);
-          userData.sources.push('Farcaster');
-          console.log('✅ Farcaster data collected');
-        } else {
-          console.log('⚠️  Farcaster permission denied by user');
-        }
-      } catch (error) {
-        console.warn('⚠️  Farcaster data unavailable:', error);
-      }
-    }
-
-    // Collect conversation memory (always try)
-    try {
-      userData.conversationMemory = await this.collectConversationMemory(userId);
-      userData.sources.push('Conversation');
-      userData.permissions.conversation = true;
-      console.log('✅ Conversation memory collected');
-    } catch (error) {
-      console.warn('⚠️  Conversation memory unavailable:', error);
     }
 
     // Check if we have enough data
@@ -179,27 +176,19 @@ export class EnhancedDataCollector {
   }
 
   /**
-   * Check if user has granted Twitter permission
+   * Check if user has granted Twitter/X permission
+   *
+   * Rule: Only fetch Twitter data if user has authorized X account access
+   * If no auth → skip Twitter data (fallback to conversation only)
    */
   private async checkTwitterPermission(userId: string): Promise<boolean> {
-    // TODO: Implement OpenClaw permission check
-    // For now, assume granted
-    return true;
-  }
+    // TODO: Connect to OpenClaw permission API
+    // For now, assume granted (will be replaced with real check)
+    //
+    // Real implementation should be:
+    // const auth = await openclaw.permissions.checkTwitterAuth(userId);
+    // return auth.isAuthorized;
 
-  /**
-   * Check if user has granted Wallet permission
-   */
-  private async checkWalletPermission(userId: string): Promise<boolean> {
-    // TODO: Implement OpenClaw permission check
-    return true;
-  }
-
-  /**
-   * Check if user has granted Farcaster permission
-   */
-  private async checkFarcasterPermission(userId: string): Promise<boolean> {
-    // TODO: Implement OpenClaw permission check
     return true;
   }
 
@@ -207,146 +196,125 @@ export class EnhancedDataCollector {
    * Collect comprehensive Twitter/X data
    */
   private async collectTwitterData(userId: string): Promise<TwitterData> {
-    // TODO: Integrate with OpenClaw's Twitter data access
-    // OpenClaw should provide these APIs:
-    // - openclaw.twitter.getProfile(userId)
-    // - openclaw.twitter.getFollowing(userId)
-    // - openclaw.twitter.getTweets(userId, limit)
-    // - openclaw.twitter.getInteractions(userId)
+    // Use bird CLI to fetch real Twitter data
+    const { fetchTwitterProfile, fetchTwitterFollowing, analyzeInteractions } = await import('../integrations/bird-twitter');
 
-    // Mock data for development
-    return {
-      bio: 'Building the future of Web3 | AI enthusiast | Early stage investor | Wellness advocate',
-      following: [
-        '@naval',
-        '@balajis',
-        '@vitalik',
-        '@sama',
-        '@elonmusk',
-        '@pmarca',
-        '@cdixon',
-        '@a16z',
-        '@coinbase',
-        '@OpenAI',
-      ],
-      tweets: [
-        {
-          text: 'Just discovered an amazing AI tool for productivity! This is going to change how I work.',
-          likes: 45,
-          retweets: 12,
-          timestamp: Date.now() - 86400000,
+    try {
+      // Fetch profile with recent tweets
+      const profile = await fetchTwitterProfile(userId);
+
+      if (!profile) {
+        console.warn(`⚠️  No Twitter profile found for ${userId}`);
+        return {
+          bio: '',
+          following: [],
+          tweets: [],
+          interactions: {
+            likes: [],
+            retweets: [],
+            replies: [],
+          },
+        };
+      }
+
+      // Fetch following list
+      const followingData = await fetchTwitterFollowing(userId, 100);
+      const following = followingData?.handles || [];
+
+      // Analyze interactions from tweets
+      const interactions = analyzeInteractions(profile.tweets);
+
+      return {
+        bio: profile.bio,
+        following,
+        tweets: profile.tweets,
+        interactions,
+      };
+    } catch (error) {
+      console.error(`❌ Failed to fetch Twitter data for ${userId}:`, error);
+      // Return empty data rather than failing
+      return {
+        bio: '',
+        following: [],
+        tweets: [],
+        interactions: {
+          likes: [],
+          retweets: [],
+          replies: [],
         },
-        {
-          text: 'The future of DeFi is looking bright 🚀 Can\'t wait to see what\'s next in Web3',
-          likes: 89,
-          retweets: 23,
-          timestamp: Date.now() - 172800000,
-        },
-        {
-          text: 'Always learning something new every day. Today: meditation and mindfulness practices.',
-          likes: 34,
-          retweets: 8,
-          timestamp: Date.now() - 259200000,
-        },
-        {
-          text: 'Supporting early-stage startups is so rewarding. Love seeing founders build their dreams.',
-          likes: 67,
-          retweets: 15,
-          timestamp: Date.now() - 345600000,
-        },
-      ],
-      interactions: {
-        likes: ['@OpenAI', '@sama', '@andrewchen', '@lennysan', '@pmarca'],
-        retweets: ['@vitalik', '@naval', '@balajis', '@cdixon'],
-        replies: ['@sama', '@elonmusk', '@naval'],
-      },
-    };
+      };
+    }
   }
 
   /**
    * Collect comprehensive Wallet data
+   *
+   * ⚠️ OPT-IN ONLY - Not used in default personality analysis
+   *
+   * This is only called when:
+   * 1. User explicitly provides wallet address
+   * 2. User signs ownership proof
+   * 3. User opts-in to wallet-based recommendations
+   *
+   * Reasons:
+   * - Wallet ownership is hard to prove automatically
+   * - Privacy concerns
+   * - Conversation + Twitter already sufficient for persona
    */
   private async collectWalletData(userId: string): Promise<WalletData> {
-    // TODO: Integrate with blockchain data providers
-    // Options:
-    // - Alchemy API: https://docs.alchemy.com/reference/overview
-    // - Moralis API: https://docs.moralis.io/web3-data-api
-    // - OpenClaw's built-in wallet access
+    // Get real wallet address from storage
+    const { WalletStorage } = await import('../blockchain/wallet-storage');
+    const walletStorage = new WalletStorage();
 
-    // Mock data for development
-    return {
-      address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
-      tokens: [
-        { symbol: 'ETH', name: 'Ethereum', balance: '2.5', value: 5000 },
-        { symbol: 'USDC', name: 'USD Coin', balance: '10000', value: 10000 },
-        { symbol: 'UNI', name: 'Uniswap', balance: '500', value: 3000 },
-        { symbol: 'AAVE', name: 'Aave', balance: '100', value: 8000 },
-      ],
-      nfts: [
-        {
-          collection: 'Azuki',
-          name: 'Azuki #1234',
-          tokenId: '1234',
-          image: 'https://...',
-        },
-        {
-          collection: 'CryptoPunks',
-          name: 'CryptoPunk #5678',
-          tokenId: '5678',
-          image: 'https://...',
-        },
-      ],
-      transactions: [
-        {
-          hash: '0xabc...',
-          to: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984', // Uniswap
-          value: '0.5',
-          timestamp: Date.now() - 86400000,
-          method: 'swap',
-        },
-        {
-          hash: '0xdef...',
-          to: '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9', // Aave
-          value: '1000',
-          timestamp: Date.now() - 172800000,
-          method: 'deposit',
-        },
-      ],
-      contracts: [
-        '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984', // Uniswap
-        '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9', // Aave
-      ],
-      defiProtocols: ['Uniswap', 'Aave', 'Compound', 'Curve', '1inch'],
-    };
+    try {
+      // Get wallet from storage
+      const walletRecord = await walletStorage.getUserWallet(userId);
+
+      if (!walletRecord) {
+        console.warn(`⚠️  No wallet found for user ${userId}`);
+        return {
+          address: '',
+          tokens: [],
+          nfts: [],
+          transactions: [],
+          contracts: [],
+          defiProtocols: [],
+        };
+      }
+
+      const walletAddress = walletRecord.walletAddress;
+      console.log(`✅ Found wallet address: ${walletAddress}`);
+
+      // TODO: Integrate with blockchain data providers to fetch:
+      // - Tokens and balances (Alchemy/Moralis/Etherscan API)
+      // - NFTs (Alchemy NFT API)
+      // - Transaction history (Etherscan/Alchemy)
+      // - DeFi protocol interactions
+      //
+      // For now, return minimal data with real wallet address
+      // This allows the skill to work while we add blockchain data fetching
+
+      return {
+        address: walletAddress,
+        tokens: [],
+        nfts: [],
+        transactions: [],
+        contracts: [],
+        defiProtocols: [],
+      };
+    } catch (error) {
+      console.error(`❌ Failed to fetch wallet data for ${userId}:`, error);
+      return {
+        address: '',
+        tokens: [],
+        nfts: [],
+        transactions: [],
+        contracts: [],
+        defiProtocols: [],
+      };
+    }
   }
 
-  /**
-   * Collect Farcaster data
-   */
-  private async collectFarcasterData(userId: string): Promise<FarcasterData> {
-    // TODO: Integrate with Farcaster API
-    // Options:
-    // - Warpcast API
-    // - Neynar API: https://docs.neynar.com/
-    // - Airstack: https://docs.airstack.xyz/
-
-    // Mock data for development
-    return {
-      bio: 'Web3 builder | Supporting early stage projects | AI enthusiast',
-      channels: ['ai', 'defi', 'productivity', 'wellness', 'builders'],
-      casts: [
-        {
-          text: 'Loving the new AI tools coming out. The pace of innovation is incredible!',
-          timestamp: Date.now() - 86400000,
-        },
-        {
-          text: 'DeFi summer is back! So much building happening on Base.',
-          timestamp: Date.now() - 172800000,
-        },
-      ],
-      following: ['dwr.eth', 'vitalik.eth', 'jessepollak', 'farcaster'],
-    };
-  }
 
   /**
    * Collect conversation memory from OpenClaw session files
@@ -390,41 +358,64 @@ export class EnhancedDataCollector {
 
   /**
    * Check if we have sufficient data for analysis
+   *
+   * Minimum requirement: At least Conversation OR Twitter
+   * Best case: Both Conversation AND Twitter
    */
   hasSufficientData(userData: UserData): boolean {
-    // We need at least one of: Twitter, Wallet, or Conversation
     return userData.sources.length > 0;
   }
 
   /**
    * Get data quality score (0-100)
+   *
+   * Scoring (simplified - only Conversation + Twitter):
+   * - Conversation: 85 points (who they REALLY are - authentic, private, direct)
+   * - Twitter: 15 points (public signal - supplemental validation)
+   *
+   * Rationale: Conversation is more authentic and always available (OpenClaw-owned)
    */
   getDataQualityScore(userData: UserData): number {
     let score = 0;
 
-    // Twitter: 40 points (most important)
-    if (userData.twitter) {
-      score += 40;
-      if (userData.twitter.tweets.length >= 5) score += 10;
-      if (userData.twitter.following.length >= 10) score += 10;
-    }
-
-    // Wallet: 30 points
-    if (userData.wallet) {
-      score += 30;
-      if (userData.wallet.defiProtocols.length > 0) score += 10;
-    }
-
-    // Conversation: 20 points
+    // Conversation: 85 points (foundation - the real person)
     if (userData.conversationMemory) {
-      score += 20;
+      score += 70; // Base score for having conversation data
+
+      // Bonus: rich conversation history (up to +15 points)
+      if (userData.conversationMemory.topics.length >= 3) score += 5;
+      if (userData.conversationMemory.interests.length >= 3) score += 5;
+      if (userData.conversationMemory.history.length >= 5) score += 5;
     }
 
-    // Farcaster: 10 points (bonus)
-    if (userData.farcaster) {
-      score += 10;
+    // Twitter: 15 points (supplemental - public validation)
+    if (userData.twitter && userData.dataQuality.twitter === 'real') {
+      score += 10; // Base score for having Twitter data
+
+      // Bonus: rich Twitter data (up to +5 points)
+      if (userData.twitter.tweets.length >= 10) score += 3;
+      if (userData.twitter.following.length >= 20) score += 2;
     }
 
     return Math.min(score, 100);
+  }
+
+  /**
+   * Get human-readable data quality summary
+   */
+  getDataQualitySummary(userData: UserData): string {
+    const score = this.getDataQualityScore(userData);
+    const sources = userData.sources.join(' + ');
+
+    // Conversation-heavy scoring means we can have high confidence with just conversation
+    if (score >= 75) {
+      return `High confidence (${score}/100) - ${sources} - authentic personality`;
+    } else if (score >= 50) {
+      return `Medium confidence (${score}/100) - ${sources}`;
+    } else if (score > 0) {
+      return `Low confidence (${score}/100) - ${sources} - consider manual Q&A`;
+    } else {
+      return 'No data - fallback to manual Q&A required';
+    }
   }
 }

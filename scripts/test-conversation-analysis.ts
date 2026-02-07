@@ -8,6 +8,12 @@
  * 4. Generate recommendations based on personality + interests
  */
 
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Explicitly load .env from project root (works with ts-node)
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
 import { OpenClawSessionReader } from '../src/integrations/openclaw-session-reader';
 import { EnhancedDataCollector } from '../src/analyzers/data-collector-enhanced';
 import { PersonalityAnalyzer } from '../src/analyzers/personality-analyzer';

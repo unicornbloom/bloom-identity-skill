@@ -4,7 +4,12 @@
  * Diagnoses issues with CDP wallet creation
  */
 
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Explicitly load .env from project root (works with ts-node)
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
 import { AgentWallet } from '../src/blockchain/agent-wallet';
 
 async function testCDPWallet() {

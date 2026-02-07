@@ -1,5 +1,5 @@
 ---
-name: bloom-identity-openclaw
+name: bloom
 description: Generate Bloom Identity Card from current conversation. Analyzes your personality directly from the conversation context without needing external data. Creates personalized identity type, recommends matching skills, and generates dashboard link.
 user-invocable: true
 command-dispatch: tool
@@ -29,12 +29,14 @@ This skill analyzes your conversation with OpenClaw bot to:
 
 Simply say:
 ```
-/bloom-identity
+/bloom
 ```
 
-Or:
+Or use natural language:
 ```
 generate my bloom identity
+discover my personality
+create my identity card
 ```
 
 ## Requirements

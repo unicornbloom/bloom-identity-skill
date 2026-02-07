@@ -2,25 +2,66 @@
 
 # Bloom Identity OpenClaw Wrapper
 #
-# This script reads the full OpenClaw session file for comprehensive analysis
+# Auto-installs bloom-identity-skill on first run
 # Uses the last ~120 messages for accurate personality detection
 
 set -e
 
 # Get the directory of this script
 WRAPPER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BLOOM_SKILL_DIR="$(cd "$WRAPPER_DIR/.." && pwd)"
 
-# Check if bloom-identity-skill is installed
-if [ ! -d "$BLOOM_SKILL_DIR/src" ]; then
-  echo "❌ Error: Bloom Identity Skill not found at $BLOOM_SKILL_DIR"
+# Determine workspace location
+WORKSPACE_DIR="${HOME}/.openclaw/workspace"
+BLOOM_SKILL_DIR="${WORKSPACE_DIR}/bloom-identity-skill"
+
+# Auto-install bloom-identity-skill if not present
+if [ ! -d "$BLOOM_SKILL_DIR" ] || [ ! -d "$BLOOM_SKILL_DIR/src" ]; then
+  echo "📦 First-time setup: Installing Bloom Identity Skill..."
   echo ""
-  echo "Please install:"
-  echo "  cd ~/.openclaw/workspace"
-  echo "  git clone https://github.com/unicornbloom/bloom-identity-skill.git"
-  echo "  cd bloom-identity-skill"
-  echo "  npm install"
-  exit 1
+
+  # Create workspace directory if needed
+  mkdir -p "$WORKSPACE_DIR"
+
+  # Clone the repo
+  echo "⬇️  Downloading from GitHub..."
+  if ! git clone --depth 1 https://github.com/unicornbloom/bloom-identity-skill.git "$BLOOM_SKILL_DIR" 2>/dev/null; then
+    echo "❌ Error: Failed to download Bloom Identity Skill"
+    echo "   Please check your internet connection and try again"
+    exit 1
+  fi
+
+  # Install dependencies
+  echo "📦 Installing dependencies..."
+  cd "$BLOOM_SKILL_DIR"
+  if ! npm install --silent 2>/dev/null; then
+    echo "⚠️  Warning: npm install had issues, but continuing..."
+  fi
+
+  echo "✅ Installation complete!"
+  echo ""
+fi
+
+# Check for required environment variables
+if [ ! -f "$BLOOM_SKILL_DIR/.env" ]; then
+  echo "⚙️  Setting up configuration..."
+
+  # Copy .env.example if it exists
+  if [ -f "$BLOOM_SKILL_DIR/.env.example" ]; then
+    cp "$BLOOM_SKILL_DIR/.env.example" "$BLOOM_SKILL_DIR/.env"
+    echo "📝 Created .env file from template"
+    echo "   Edit $BLOOM_SKILL_DIR/.env to customize settings"
+  else
+    # Create minimal .env
+    cat > "$BLOOM_SKILL_DIR/.env" << 'EOF'
+# Bloom Identity Configuration
+JWT_SECRET=default_secret_change_me
+DASHBOARD_URL=https://bloomprotocol.ai
+BLOOM_API_URL=https://api.bloomprotocol.ai
+NETWORK=base-mainnet
+EOF
+    echo "📝 Created default .env file"
+  fi
+  echo ""
 fi
 
 # Parse arguments
@@ -58,25 +99,24 @@ if [ -z "$USER_ID" ]; then
   echo "❌ Error: USER_ID required"
   echo ""
   echo "Usage:"
-  echo "  bash execute.sh <session-file> <user-id>"
-  echo "  bash execute.sh --session-file <path> <user-id>"
-  echo "  Set OPENCLAW_USER_ID environment variable"
+  echo "  /bloom                  # Auto-detects session and user"
+  echo "  /bloom <user-id>        # With specific user ID"
+  echo ""
+  echo "Or set OPENCLAW_USER_ID environment variable"
   exit 1
 fi
 
 if [ -z "$SESSION_FILE" ] || [ ! -f "$SESSION_FILE" ]; then
   echo "❌ Error: Session file not found"
   echo ""
-  echo "Specify session file:"
-  echo "  bash execute.sh ~/.openclaw/agents/main/sessions/<SessionId>.jsonl <user-id>"
-  echo ""
-  echo "Or ensure OpenClaw sessions directory exists:"
-  echo "  ~/.openclaw/agents/main/sessions/"
+  echo "Please ensure you have an active OpenClaw conversation"
+  echo "Session files are stored at: ~/.openclaw/agents/main/sessions/"
   exit 1
 fi
 
-echo "🌸 Bloom Identity - Analyzing full session history..."
+echo "🌸 Bloom Identity - Analyzing your conversation..."
 echo ""
 
 # Run analyzer with session file
-npx tsx "$BLOOM_SKILL_DIR/scripts/run-from-session.ts" "$SESSION_FILE" "$USER_ID"
+cd "$BLOOM_SKILL_DIR"
+npx tsx scripts/run-from-session.ts "$SESSION_FILE" "$USER_ID"

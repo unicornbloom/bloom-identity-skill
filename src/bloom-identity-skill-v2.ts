@@ -174,7 +174,7 @@ export class BloomIdentitySkillV2 {
         }
 
         dataQuality = this.dataCollector.getDataQualityScore(userData);
-        console.log(`📊 Data quality score: ${dataQuality}/100`);
+        // Data quality is calculated but not displayed (cleaner output)
         console.log(`📊 Available sources: ${userData.sources.join(', ')}`);
 
         // ⭐ CRITICAL: Check if we have ANY real data (conversation OR Twitter)

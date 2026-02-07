@@ -17,9 +17,9 @@ export interface UserWalletRecord {
   userId: string;
   walletAddress: `0x${string}`;
   network: string;
-  encryptedPrivateKey?: string;  // ⭐ NEW: For locally generated wallets
   createdAt: string;
   lastUsedAt: string;
+  privateKey?: `0x${string}`;  // ⭐ NEW: For local wallets (TODO: encrypt post-hackathon)
 }
 
 const STORAGE_DIR = path.join(process.cwd(), '.wallet-storage');
@@ -74,15 +74,14 @@ export class WalletStorage {
   /**
    * Save wallet for a specific user
    *
-   * ⭐ Supports both:
-   * - CDP wallets (only address needed)
-   * - Local wallets (encrypted private key stored)
+   * ⭐ AgentKit 0.10.4: Only stores address (CDP manages wallet server-side)
+   * ⭐ NEW: Can also store privateKey for local wallets (TODO: encrypt post-hackathon)
    */
   async saveUserWallet(
     userId: string,
     walletAddress: `0x${string}`,
     network: string,
-    encryptedPrivateKey?: string  // ⭐ NEW: For local wallets
+    privateKey?: `0x${string}`  // ⭐ NEW: Optional for local wallets
   ): Promise<void> {
     const records = await this.loadRecords();
 
@@ -92,9 +91,9 @@ export class WalletStorage {
       userId,
       walletAddress,
       network,
-      encryptedPrivateKey,  // ⭐ Store encrypted key if provided
       createdAt: records[userId]?.createdAt || now,
       lastUsedAt: now,
+      ...(privateKey && { privateKey }),  // ⭐ Only add if provided
     };
 
     await this.saveRecords(records);

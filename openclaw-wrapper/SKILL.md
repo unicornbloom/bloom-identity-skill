@@ -4,11 +4,30 @@ description: Discover your supporter personality and find AI tools you'll love. 
 user-invocable: true
 command-dispatch: tool
 metadata: {"requires": {"bins": ["node", "npx"]}}
+permissions:
+  - read:conversations  # Analyzes your conversation history
+  - network:external    # Connects to Bloom API for dashboard
+  - crypto:wallet       # Creates agent wallet (optional feature)
 ---
 
 # Bloom Supporter Identity
 
 **Discover your supporter personality—straight from your conversations.**
+
+## ⚠️ Permissions & Capabilities
+
+This skill requires the following permissions:
+
+**📖 Read Conversations** - Analyzes your last ~120 messages to understand your interests and supporter type. Raw conversation text stays local; only analysis results are used.
+
+**🌐 External Network** - Connects to Bloom Protocol API to:
+- Generate your shareable dashboard URL
+- Store your identity card (personality type, tagline, categories)
+- Enable future features (skill recommendations, creator tipping)
+
+**🔐 Agent Wallet (Optional)** - Creates a blockchain wallet on Base network (Coinbase CDP) for future tipping features. This is generated automatically but not required for basic functionality.
+
+**Your Control**: Your conversation is analyzed locally. You decide whether to share your identity card publicly via the dashboard link.
 
 Are you a Visionary who jumps on new tools early? An Explorer trying everything? A Cultivator building communities? An Optimizer fine-tuning workflows? Or an Innovator pushing boundaries?
 
@@ -197,6 +216,32 @@ echo "Your conversation here" | \
 
 **Data Usage**:
 Your identity card is stored on Bloom Protocol to power your shareable dashboard and enable future features like creator tipping and skill recommendations.
+
+## 🔒 Security Notes
+
+**Agent Wallet**:
+- Automatically generated on first run via Coinbase CDP (Base network)
+- Used for future creator tipping (not yet active)
+- ⚠️ **Do not deposit funds** - withdrawal features not ready
+- Private keys stored locally with AES-256-GCM encryption
+- Read-only until tipping features are enabled
+
+**Conversation Access**:
+- Reads from `~/.openclaw/agents/main/sessions/*.jsonl`
+- Only analyzes content locally (text not uploaded)
+- Results (personality type, categories) sent to Bloom API
+
+**JWT Tokens**:
+- Used for dashboard authentication only
+- Generated with configurable `JWT_SECRET` in `.env`
+- Does not grant access to your OpenClaw account
+
+**External Connections**:
+- `api.bloomprotocol.ai` - Identity card storage
+- `bloomprotocol.ai` - Dashboard hosting
+- `clawhub.ai` - Skill recommendations (optional)
+
+**Open Source**: All code is public at [github.com/unicornbloom/bloom-identity-skill](https://github.com/unicornbloom/bloom-identity-skill) for security audits.
 
 ## 🔍 How to Find Skills You'll Love
 
